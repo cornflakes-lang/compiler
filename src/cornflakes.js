@@ -4,14 +4,10 @@ const uglify = require('uglify-js').minify
 
 //////////////////////////////////////////////////////////////////////////
 
-const readline = require('readline')
+const rl = require('readline-sync')
 const fs = require('fs')
 
-const rl = readline.createInterface({
-  input: process.stdin
-})
-
-rl.on('line', line => {
+rl.promptLoop(line => {
   try {
     let compiled = compile(parse(line))
 
@@ -33,8 +29,6 @@ rl.on('line', line => {
   } catch(e) {
     console.error(e)
   }
-
-  process.stdout.write('> ')
+}, {
+  prompt: '>>> '
 })
-
-process.stdout.write('> ')
