@@ -117,6 +117,7 @@ function compile(indent, res, fn, ctx) {
   ////////////////////////////////////////////////////////////////////////
 
   fn.body.forEach(([type, v]) => {
+    console.log('.')
     if(type === b.NAMES.STRING) {
       res += indent + 'this.push(['
       res += v.value.map(char => serialize(char.value)).join(', ')
@@ -130,6 +131,7 @@ function compile(indent, res, fn, ctx) {
     }
 
     if(type === b.NAMES.VARIABLE) {
+      console.log('...')
       res += indent + compileCallToVar(v.name, ctx) + '\n'
     }
 
@@ -177,8 +179,8 @@ function compileCallToPath(path, ctx) {
 }
 function compileCallToVar(v, ctx) {
   let where = find(v, ctx, ctx.path)
-
-  if(where === null) {
+  
+  if(where.path === null) {
     throw 'Variable ' + v + ' is undefined'
   } else {
     return compileCallToPath(improveFindReturn(where), ctx)
