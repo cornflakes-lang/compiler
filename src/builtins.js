@@ -32,6 +32,17 @@ module.exports = {
     }
   },
 
+  '$': function dump(ctx, isNode) {
+    var stack = JSON.stringify(ctx.stack, null, 2);
+
+    if(isNode) process.stdout.write(stack);
+    else {
+      var pre = document.createElement('pre');
+      pre.innerText = stack;
+      window.document.body.appendChild(span);
+    }
+  },
+
   // Logic ///////////////////////////////////////////////////////////////
 
   x: function execute(ctx, isNode, fn) {
