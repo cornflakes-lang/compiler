@@ -11,6 +11,9 @@ Object.values = obj => Object.keys(obj).map(k => obj[k])
 //////////////////////////////////////////////////////////////////////////
 
 module.exports = function(main) {
+  process.stdout.write('AST TREE | ')
+  console.dir(main, { depth: null })
+  
   // global context
   let ctx = {
     parent: undefined,
@@ -30,6 +33,7 @@ try {
     this.g = {
       parent: p,
       variables: {},
+      path: [],
       stack: []
     };
 
@@ -44,9 +48,12 @@ try {
 
     var callWith = [ctx, isNode];
     for(var i = 0; i < this.fn.length - 2; i++) {
+      console.log()
       callWith.push(args[i] || builtins[','].call(this.g, isNode, []));
     }
+    console.log('RES')
     var res = this.fn.apply(this, callWith);
+    console.log('/RES')
     if(ctx && res)
       ctx.stack.push(res);
   }
@@ -67,12 +74,11 @@ try {
     return array;
   };
 `
-
   res += `
   var builtins;
   new F(undefined, function(isNode, _) {
     this.g.variables = ${serialize(builtins)};
-    builtins = ${serialize(builtins)};` + /* we want the value of this.g.variables but don't want to keep a reference to it, and this is the fastest way. */ `
+    builtins = this.g.variables;
     for(var builtin in this.g.variables) {
       if(!(this.g.variables.hasOwnProperty(builtin))) continue;
       this.g.variables[builtin] = new F({}, this.g.variables[builtin]);
@@ -88,7 +94,6 @@ try {
       ]
     ]
   }, ctx, [])
-  // TODO when we implement user-defined functions: check to see that the last stack item isn't a function
   var oPath = improveFindReturn(find('.', ctx, []))
   res += `
     this.pop().call(this.g, []);
@@ -109,14 +114,16 @@ try {
 
 function compile(indent, res, fn, ctx) {
 
-  function dfnVar(name, path) {
-    evalPath(path).variables[name] = true
-    res += indent + `${parsePath(['this.g', ...path, 'variables', name])} = undefined;\n`
+  function dfnVar(name, value) {
+    ctx.variables[name] = true
+    return `this.g.variables.${name} = ${typeof value == 'string' ? value : JSON.stringify(value)};\n`
   }
 
   ////////////////////////////////////////////////////////////////////////
-
+  
   fn.body.forEach(([type, v]) => {
+    if(type === null) return
+      
     if(type === b.NAMES.STRING) {
       res += indent + 'this.push(['
       res += v.value.map(char => serialize(char.value)).join(', ')
@@ -134,9 +141,14 @@ function compile(indent, res, fn, ctx) {
     }
 
     if(type === b.NAMES.FUNCTION) {
-      res += indent + 'this.push(new F(' + parsePath(['this.g', ...(ctx.path)]) + ', function() {\n'
+      res += indent + 'this.push(new F(' + parsePath(['this.g', ...(ctx.path)]) + ', function(' + (new Array(v.argnames.length + 2)).fill('_').join(',') + ') {\n'
+      v.argnames.forEach(function(v, i) {
+        res += indent + '  ' + dfnVar(v, 'arguments[' + (i + 2) + ']');
+      })
+      
       res = compile(indent + '  ', res, v, {
         parent: ctx,
+        path: [],
         variables: {},
         stack: []
       }, [], ctx)

@@ -46,7 +46,13 @@ module.exports = {
   // Logic ///////////////////////////////////////////////////////////////
 
   x: function execute(ctx, isNode, fn) {
-    fn.call();
+    var args = [];
+    while(args.length < (fn.fn.length - 2)) {
+      args.push(ctx.stack.pop());
+    }
+    args = args.reverse();
+    console.log('ARGS |', args);
+    fn.call(this.g, isNode, args);
   },
 
   '?': function if_(ctx, isNode, bool, fn) {
@@ -220,5 +226,5 @@ module.exports = {
 
   O: function popArr(ctx, isNode, arr) {
     return arr.pop();
-  }
+  }  
 }
