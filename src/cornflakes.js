@@ -12,14 +12,29 @@ const rl = readline.createInterface({
 })
 
 rl.on('line', line => {
-  let code = `/* compiled from \`${line}\` */\n` + compile(parse(line))
-  fs.writeFileSync('out.js', code, 'utf8')
+  try {
+    let compiled = compile(parse(line))
 
-  let uglified = uglify(code, {
-    fromString: true
-  })
+    // write to files ////////////////////////////////////////////////////
 
-  fs.writeFileSync('out.min.js', uglified.code, 'utf8')
+    let code = `/* compiled from \`${line}\` */\n` + compiled
+    fs.writeFileSync('out.js', code, 'utf8')
 
-  process.exit()
+    let uglified = uglify(code, {
+      fromString: true
+    })
+
+    fs.writeFileSync('out.min.js', uglified.code, 'utf8')
+
+    //////////////////////////////////////////////////////////////////////
+
+    eval(uglified.code, 'out.min.js', {}, true)
+    process.stdout.write('\n')
+  } catch(e) {
+    console.error(e)
+  }
+
+  process.stdout.write('> ')
 })
+
+process.stdout.write('> ')

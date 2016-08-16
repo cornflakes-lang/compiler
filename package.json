@@ -3,6 +3,7 @@
   "private": true,
   "main": "src/cornflakes.js",
   "dependencies": {
+    "eval": "^0.1.1",
     "nearley-make": "^1.0.0",
     "readline-sync": "^1.4.4",
     "rotate-array": "^1.1.0",
