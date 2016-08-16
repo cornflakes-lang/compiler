@@ -44,7 +44,7 @@ try {
 
     var callWith = [ctx, isNode];
     for(var i = 0; i < this.fn.length - 2; i++) {
-      callWith.push(args[i] || builtins['i'].call(this.g, isNode, []));
+      callWith.push(args[i] || builtins[','].call(this.g, isNode, []));
     }
     var res = this.fn.apply(this, callWith);
     if(ctx && res)
@@ -117,7 +117,6 @@ function compile(indent, res, fn, ctx) {
   ////////////////////////////////////////////////////////////////////////
 
   fn.body.forEach(([type, v]) => {
-    console.log('.')
     if(type === b.NAMES.STRING) {
       res += indent + 'this.push(['
       res += v.value.map(char => serialize(char.value)).join(', ')
@@ -131,7 +130,6 @@ function compile(indent, res, fn, ctx) {
     }
 
     if(type === b.NAMES.VARIABLE) {
-      console.log('...')
       res += indent + compileCallToVar(v.name, ctx) + '\n'
     }
 
