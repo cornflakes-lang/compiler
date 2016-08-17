@@ -15,7 +15,7 @@
     "chai": "^3.5.0"
   },
   "scripts": {
-    "test": "ava"
+    "test": "./node_modules/ava/cli.js"
   },
   "ava": {
     "files": [
