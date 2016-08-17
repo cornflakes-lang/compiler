@@ -4,9 +4,7 @@
 
 # Cornflakes Parser & Compiler
 
-[![Issues](https://img.shields.io/github/issues-raw/cornflakes-lang/compiler.svg?maxAge=2592000&style=flat-square)](https://github.com/cornflakes-lang/compiler/issues)
-
-[![Travis](https://img.shields.io/travis/cornflakes-lang/compiler.svg?maxAge=2592000&style=flat-square)](https://travis-ci.org/cornflakes-lang/compiler)
+[![Issues](https://img.shields.io/github/issues-raw/cornflakes-lang/compiler.svg?maxAge=2592000&style=flat-square)](https://github.com/cornflakes-lang/compiler/issues) [![Travis](https://img.shields.io/travis/cornflakes-lang/compiler.svg?maxAge=2592000&style=flat-square)](https://travis-ci.org/cornflakes-lang/compiler)
 
 ```sh
 # Cornflakes REPL
