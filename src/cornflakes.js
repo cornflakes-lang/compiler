@@ -1,34 +1,35 @@
 const parse = require('./parser')
 const compile = require('./compile')
-const uglify = require('uglify-js').minify
+const run = require('eval')
 
 //////////////////////////////////////////////////////////////////////////
 
 const rl = require('readline-sync')
-const fs = require('fs')
+let exit = false
 
-rl.promptLoop(line => {
-  try {
-    let compiled = compile(parse(line))
+module.exports = function() {
+  rl.promptLoop(line => {
+    if(line === '') {
+      if(exit) {
+        process.exit()
+      } else {
+        console.log('(To exit, enter nothing again)')
+        exit = true
+        return
+      }
+    } else {
+      exit = false
+    }
 
-    // write to files ////////////////////////////////////////////////////
+    try {
+      let compiled = compile(parse(line))
+      run(compiled, 'out.min.js', {}, true)
 
-    let code = `/* compiled from \`${line}\` */\n` + compiled
-    fs.writeFileSync('out.js', code, 'utf8')
-
-    let uglified = uglify(code, {
-      fromString: true
-    })
-
-    fs.writeFileSync('out.min.js', uglified.code, 'utf8')
-
-    //////////////////////////////////////////////////////////////////////
-
-    eval(uglified.code, 'out.min.js', {}, true)
-    process.stdout.write('\n')
-  } catch(e) {
-    console.error(e)
-  }
-}, {
-  prompt: '>>> '
-})
+      process.stdout.write('\n')
+    } catch(e) {
+      console.error(e)
+    }
+  }, {
+    prompt: '>>> '
+  })
+}
