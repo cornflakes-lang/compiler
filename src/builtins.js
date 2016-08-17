@@ -215,7 +215,7 @@ module.exports = {
 
   // Arrays //////////////////////////////////////////////////////////////
 
-  P: function pushArr(ctx, isNode, arr, el) {
+  P: function pushArr(ctx, isNode, el, arr) {
     arr.push(el);
     return arr;
   },
