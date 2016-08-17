@@ -28,8 +28,8 @@ program -> string           {% d => d[0] %}
 
            if(!d[3]) d[3] = [[0, null], '|']
 
-           let args = d[3][0][0]
-           let argnames = (d[3][0][1] || []).map(v => v[0])
+           let args = d[3][0]
+           let argnames = (d[3][1] || []).map(v => v[0])
 
            return [builtins.NAMES.FUNCTION, new builtins.CFFunction(body, args, argnames)]
          } %}

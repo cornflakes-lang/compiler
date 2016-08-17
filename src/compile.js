@@ -138,18 +138,24 @@ try {
   return res
 }
 
-function compile(indent, res, fn, ctx) {
+F.constructor = F
+function F(p, fn) {
+  this.fn = fn
+}
 
-  function dfnVar(name, value) {
-    ctx.variables[name] = true
-    return `this.g.variables.${name} = ${typeof value == 'string' ? value : JSON.stringify(value)};\n`
+function compile(indent, res, fn, ctx, todo) {
+  if(typeof todo === 'function')
+    res = todo(indent, res, fn, ctx)
+
+  function dfnVar(name, path, value, ctx) {
+    console.log('DEBUG || Defining variable', path.concat(name), 'with value', value, 'or', ('return (' + (typeof value == 'string' ? value : JSON.stringify(value)) + ')'))
+    evalPath(ctx, path)[name] = (new Function('F', 'return ' + (typeof value == 'string' ? value : JSON.stringify(value))))(F)
+    return `${parsePath(['this.g', ...path, name])} = ${typeof value == 'string' ? value : JSON.stringify(value)};\n`
   }
 
   ////////////////////////////////////////////////////////////////////////
 
-  fn.body.forEach(([type, v]) => {
-    if(type === null) return
-
+  fn.body.filter(v => v && v[0]).forEach(([type, v]) => {
     if(type === b.NAMES.STRING) {
       res += indent + 'this.push(['
       res += v.value.map(char => serialize(char.value)).join(', ')
@@ -168,16 +174,20 @@ function compile(indent, res, fn, ctx) {
 
     if(type === b.NAMES.FUNCTION) {
       res += indent + 'this.push(new F(' + parsePath(['this.g', ...(ctx.path)]) + ', function(' + (new Array(v.argnames.length + 2)).fill('_').join(',') + ') {\n'
-      v.argnames.forEach(function(v, i) {
-        res += indent + '  ' + dfnVar(v, 'arguments[' + (i + 2) + ']');
-      })
 
       res = compile(indent + '  ', res, v, {
         parent: ctx,
         path: [],
         variables: {},
         stack: []
-      }, [], ctx)
+      }, function(indent, res, fn, ctx) {
+        res += indent + 'this.args = arguments;\n'
+        v.argnames.forEach(function(name, i) {
+          res += indent + dfnVar(name, ['variables'],
+          'new F(this.g, function(ctx, isNode) { return ctx.args[' + (i + 2) + ']; })', ctx);
+        })
+        return res
+      })
 
       res += indent + '  return this.pop();\n'
       res += indent + '}));\n'
@@ -195,7 +205,7 @@ function find(what, origin, path, recursions) {
   recursions = recursions || 0
   let evaledPath = evalPath(origin, path)
 
-  if(Object.keys(evaledPath.variables).indexOf(what) > -1)
+  if(Object.getOwnPropertyNames(evaledPath.variables).indexOf(what) > -1)
     return { path: [...path, 'variables', what], recursions }
   if(!evaledPath.parent)
     return { path: null, recursions }
@@ -208,8 +218,11 @@ function improveFindReturn(find) {
 function compileCallToPath(path, ctx) {
   let fn = evalPath(ctx, path)
 
-  let pops = 'this.pop(),'.repeat(fn.length - 2)
-  pops = '([' + pops.slice(0, pops.length - 1) + ']).reverse()'
+  console.log('DEBUG || compileCallToPath:', fn)
+  let pops = new Array((fn.length || fn.fn.length) - 2).fill('this.pop()')
+  let popsLen = pops.length
+  pops = '[' + pops.join(',') + ']'
+  if(popsLen > 1) pops = '(' + pops + ').reverse()'
 
   return `${ parsePath(['this.g', ...path]) }.call(this.g, ${pops}); lastCommand = ${ parsePath(['this.g', ...path]) };`
 }
