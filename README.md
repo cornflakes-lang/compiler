@@ -3,10 +3,10 @@
 </p>
 
 # Cornflakes Parser & Compiler
-> Written in JS, may be bootstrapped at a later date
 
 ```sh
-echo '"hello"o' | node src/cornflakes
+# Cornflakes REPL
+node src/cornflakes
 ```
 
-Reads from `stdin`, so type/pipe your sourcecode into it :wink:
+Reads from `stdin`, so type/pipe your sourcecode into it if you want to :wink:

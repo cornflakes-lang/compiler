@@ -5,15 +5,21 @@ const serialize = require('serialize-javascript')
 
 const builtins = require('./builtins')
 const b = require('./grammarbuiltins')
+const noop = () => {}
 
 Object.values = obj => Object.keys(obj).map(k => obj[k])
 
 //////////////////////////////////////////////////////////////////////////
 
-module.exports = function(main) {
+module.exports = function(main, silent) {
+  if(silent) {
+    console = { log: noop, dir: noop, error: noop, info: noop }
+    process.stdout.write = noop
+  }
+
   process.stdout.write('AST TREE | ')
   console.dir(main, { depth: null })
-  
+
   // global context
   let ctx = {
     parent: undefined,
@@ -120,10 +126,10 @@ function compile(indent, res, fn, ctx) {
   }
 
   ////////////////////////////////////////////////////////////////////////
-  
+
   fn.body.forEach(([type, v]) => {
     if(type === null) return
-      
+
     if(type === b.NAMES.STRING) {
       res += indent + 'this.push(['
       res += v.value.map(char => serialize(char.value)).join(', ')
@@ -145,7 +151,7 @@ function compile(indent, res, fn, ctx) {
       v.argnames.forEach(function(v, i) {
         res += indent + '  ' + dfnVar(v, 'arguments[' + (i + 2) + ']');
       })
-      
+
       res = compile(indent + '  ', res, v, {
         parent: ctx,
         path: [],
@@ -189,7 +195,7 @@ function compileCallToPath(path, ctx) {
 }
 function compileCallToVar(v, ctx) {
   let where = find(v, ctx, ctx.path)
-  
+
   if(where.path === null) {
     throw 'Variable ' + v + ' is undefined'
   } else {

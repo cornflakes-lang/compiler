@@ -69,8 +69,11 @@ module.exports = {
   },
 
   q: function quit(ctx, isNode) {
-    if(isNode) process.exit();
-    else throw 'terminate';
+    throw 'terminate';
+  },
+
+  '=': function equals(ctx, isNode, a, b) {
+    return JSON.stringify(a) === JSON.stringify(b) ? '1' : '0';
   },
 
   // Arithmetic //////////////////////////////////////////////////////////
@@ -95,7 +98,7 @@ module.exports = {
     return (parseInt(a, 16) % parseInt(b, 16)).toString(16);
   },
 
-  "|": function absolute(ctx, isNode, a) {
+  "A": function absolute(ctx, isNode, a) {
     return Math.abs(parseInt(a, 16)).toString(16);
   },
 
@@ -109,21 +112,20 @@ module.exports = {
   },
 
   p: function prime(ctx, isNode, n) {
-    var value = parseInt(n, 16)
-    if(value > 2) {
-      var i, q;
-      do {
-        i = 3;
-        value += 2;
-        q = Math.floor(Math.sqrt(value));
-        while (i <= q && value % i) {
-          i += 2;
-        }
-      } while (i <= q);
+    n = parseInt(n, 16);
 
-      return value.toString(16);
+    if(n===1) {
+      return '0';
+    } else if(n === 2) {
+      return '1';
+    } else {
+      for(var x = 2; x < n; x++) {
+        if(n % x === 0) {
+          return '0';
+        }
+      }
+      return '1';
     }
-    return value === 2 ? '3' : '2';
   },
 
   '(': function increment(ctx, isNode, n) {
@@ -154,8 +156,8 @@ module.exports = {
   },
 
   s: function swap(ctx, isNode, a, b) {
-    ctx.stack.push(b)
-    return a
+    ctx.stack.push(a)
+    return b
   },
 
   o: function pop(ctx, isNode, a) {},
@@ -222,9 +224,10 @@ module.exports = {
 
   P: function pushArr(ctx, isNode, arr, el) {
     arr.push(el);
+    return arr;
   },
 
   O: function popArr(ctx, isNode, arr) {
     return arr.pop();
-  }  
+  }
 }

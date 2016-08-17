@@ -38,13 +38,13 @@ program -> string           {% d => d[0] %}
 argsDefinition -> varchar:+ {% d => [d[0].length, d[0]] %}
 
 string   -> dqstring        {% d => [builtins.NAMES.STRING, new builtins.CFString(d[0].split('').map(char => new builtins.CFNumber(char.charCodeAt(0).toString('16'))))] %}
-          | "'" .           {% d => [builtins.NAMES.STRING, new builtins.CFString([new builtins.CFNumber(d[1].charCodeAt(0).toString('16'))])] %}
+          | "'" .           {% d => [builtins.NAMES.NUMBER, new builtins.CFNumber(d[1].charCodeAt(0).toString('16'))] %}
 
 variable -> varchar         {% d => [builtins.NAMES.VARIABLE, new builtins.CFVariable(d[0][0])] %}
-varchar  -> [^A-F0-9""''\-{}| ]
+varchar  -> [^A-F0-9""''{}| #]
 
 num      -> longnum           {% (d, l, r) => {
   if(isNaN(parseInt(d[0], 16))) return r
   else return [builtins.NAMES.NUMBER, new builtins.CFNumber(d[0].join(''))]
 } %}
-longnum -> [A-F0-9]:+ {% d => d[0] %}
+longnum -> "#":? [A-F0-9]:+ {% d => d[1] %}
