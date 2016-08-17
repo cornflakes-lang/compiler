@@ -8,7 +8,7 @@ test(',', t => {
   run(`,`, `hoi`).should.equal('hoi')
 })
 
-test.failing(', (implicit)', t => {
+test(', (implicit)', t => {
   run(`.`, `hi`).should.equal('hi')
 })
 
