@@ -4,7 +4,7 @@
 
 # Cornflakes Parser & Compiler
 
-![](https://api.travis-ci.org/cornflakes-lang/compiler.svg)
+[![](https://api.travis-ci.org/cornflakes-lang/compiler.svg)](https://travis-ci.org/cornflakes-lang/compiler)
 
 ```sh
 # Cornflakes REPL
