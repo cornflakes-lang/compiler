@@ -4,6 +4,8 @@
 
 # Cornflakes Parser & Compiler
 
+![](https://api.travis-ci.org/cornflakes-lang/compiler.svg)
+
 ```sh
 # Cornflakes REPL
 node src/cornflakes
