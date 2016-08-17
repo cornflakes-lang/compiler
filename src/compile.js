@@ -35,7 +35,9 @@ try {
   var isNode = typeof module === 'object' && typeof module.exports === 'object';
   var root = isNode ? global : window;
 
-  var F = function(p, fn) {
+  F.constructor = F;
+
+  function F(p, fn) {
     this.g = {
       parent: p,
       variables: {},
@@ -46,31 +48,32 @@ try {
     this.fn = fn;
   };
 
-  F.prototype.push = function(k) { this.g.stack.push(k); };
-  F.prototype.pop = function(k) { return this.g.stack.pop(k); };
-  F.prototype.call = function(ctx, args) {
+  F.prototype.push = function pushF(k) { this.g.stack.push(k); };
+  F.prototype.pop = function popF(k) { return this.g.stack.pop(k); };
+  F.prototype.call = function callF(ctx, args, doPush) {
     this.g.parent = ctx;
     this.g.stack  = [];
 
     var callWith = [ctx, isNode];
     for(var i = 0; i < this.fn.length - 2; i++) {
-      console.log()
-      callWith.push(args[i] || builtins[','].call(this.g, isNode, []));
+      callWith.push(args[i] || builtins[','].call(this.g, [], false));
     }
-    console.log('RES')
+
     var res = this.fn.apply(this, callWith);
-    console.log('/RES')
-    if(ctx && res)
+
+    if(ctx && res && (doPush || true)) {
       ctx.stack.push(res);
+    }
+    return res;
   }
 
-  var builtinlocals = {}
+  var builtinlocals = {};
   if(isNode) {
     builtinlocals.prompt = require('readline-sync').prompt;
   }
 
   // rotateArray "stolen" from https://github.com/CMTegner/rotate-array/blob/master/index.js
-  builtinlocals.rotateArray = function(array, num) {
+  builtinlocals.rotateArray = function rotateArray(array, num) {
     num = (num || 0) % array.length;
     if (num < 0) {
       num += array.length;
@@ -78,6 +81,23 @@ try {
     var removed = array.splice(0, num);
     array.push.apply(array, removed);
     return array;
+  };
+
+  builtinlocals.string = {
+    "cf2js": function cf2js(cf) {
+      var ret = '';
+      for(var i = 0; i < cf.length; i++) {
+        ret += String.fromCharCode(parseInt(cf[i], 16));
+      }
+      return ret;
+    },
+    "js2cf": function js2cf(js) {
+      var ret = [];
+      for(var i = 0; i < js.length; i++) {
+        ret.push(js[i].charCodeAt(0).toString(16));
+      }
+      return ret;
+    }
   };
 `
   res += `
@@ -189,7 +209,7 @@ function compileCallToPath(path, ctx) {
   let fn = evalPath(ctx, path)
 
   let pops = 'this.pop(),'.repeat(fn.length - 2)
-  pops = '[' + pops.slice(0, pops.length - 1) + ']'
+  pops = '([' + pops.slice(0, pops.length - 1) + ']).reverse()'
 
   return `${ parsePath(['this.g', ...path]) }.call(this.g, ${pops}); lastCommand = ${ parsePath(['this.g', ...path]) };`
 }

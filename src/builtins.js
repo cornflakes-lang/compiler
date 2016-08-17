@@ -7,27 +7,20 @@ module.exports = {
 
   ',': function input(ctx, isNode) {
     var str = isNode ? builtinlocals.prompt() : window.prompt();
-    var res = []
 
-    for(var i = 0; i < str.length; i++) {
-      res.push(str.charCodeAt(i).toString(16));
-    }
-
-    return res
+    return builtinlocals.string.js2cf(str);
   },
 
   '.': function output(ctx, isNode, str) {
-    var res = '';
     if(typeof str === 'string') str = [str];
 
-    for(var i = 0; i < str.length; i++) {
-      res += String.fromCharCode(parseInt(str[i], 16));
-    }
+    var string = builtinlocals.string.cf2js(str);
 
-    if(isNode) process.stdout.write(res);
-    else {
+    if(isNode) {
+      process.stdout.write(string);
+    } else {
       var span = document.createElement('span');
-      span.innerText = res;
+      span.innerText = string;
       window.document.body.appendChild(span);
     }
   },
@@ -35,8 +28,9 @@ module.exports = {
   '$': function dump(ctx, isNode) {
     var stack = JSON.stringify(ctx.stack, null, 2);
 
-    if(isNode) process.stdout.write(stack);
-    else {
+    if(isNode) {
+      process.stdout.write(stack);
+    } else {
       var pre = document.createElement('pre');
       pre.innerText = stack;
       window.document.body.appendChild(span);
@@ -51,7 +45,6 @@ module.exports = {
       args.push(ctx.stack.pop());
     }
     args = args.reverse();
-    console.log('ARGS |', args);
     fn.call(this.g, isNode, args);
   },
 
@@ -229,5 +222,10 @@ module.exports = {
 
   O: function popArr(ctx, isNode, arr) {
     return arr.pop();
+  },
+
+  '@': function getArr(ctx, isNode, arr, index) {
+    console.log(arr, index, arr[index]);
+    return arr[index];
   }
 }

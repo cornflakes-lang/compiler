@@ -11,3 +11,7 @@ test('P', t => {
 test('O', t => {
   run(`"help"O.`).should.equal('p')
 })
+
+test('@', t => {
+  run('"help"1@.').should.equal('e')
+})
